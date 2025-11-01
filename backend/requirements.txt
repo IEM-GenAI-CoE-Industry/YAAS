@@ -1,0 +1,24 @@
+langchain-mistralai                          # Integration of LangChain with MistralAI
+langchain-openai                             # Integration of LangChain with OpenAI
+langchain-ollama                             # Integration of LangChain with Ollama
+langchain-google-genai                       # Integration of LangChain with Google GenAI
+langchain-groq                               # Integration of LangChain with Groq
+langchain-core                               # Core LangChain library
+langchain-community                          # Community contributions to LangChain
+python-dotenv                                # For loading environment variables from a .env file
+langchain                                    # Framework for developing applications powered by language models
+langgraph                                    # Stateful orchestration framework for LangChain
+langsmith                                    # Integration of LangChain with LangSmith
+chromadb                                     # ChromaDB for vector storage
+black                                        # Code formatter
+unstructured                                 # Loads unstructured loaders from langchain
+networkx                                     # Required for using UnstructuredExcelLoader
+openpyxl                                     # Reads/writes Excel 2010 xlsx/xlsm/xltx/xltm files
+pandas                                       # Data manipulation and analysis library
+pypdf                                        # PDF toolkit for reading and manipulating PDF files
+python-docx                                  # Reads/writes Microsoft Word 2007/2010 docx files
+ruff                                         # Linting tool for Python
+fastapi                                      # Web framework for building APIs
+uvicorn                                      # ASGI server for FastAPI
+pydantic                                     # Data validation and settings management using Python type annotations
+pydantic-settings                            # Settings management for Pydantic

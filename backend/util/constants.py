@@ -1,0 +1,5 @@
+mistral_llm = "mistral-large-latest"
+gemini_llm = "gemini-2.5-flash"
+openai_llm = "gpt-4.1-nano-2025-04-14"
+groq_llm = "llama-3.3-70b-versatile"
+local_llm = "gemma3"
