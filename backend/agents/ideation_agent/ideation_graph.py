@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, END
-from backend.util.llm_factory import LLMFactory
-from backend.agents.ideation_agent.ideation_prompts import (
+from util.llm_factory import LLMFactory
+from util.system_prompt import (
     PROMPT_IDEATION_GENERATE,
     PROMPT_IDEATION_REFINE,
 )
@@ -33,7 +33,7 @@ def refine_ideas(state: dict) -> dict:
     state["ideas"] = response.content.strip()
     return state
 
-
+# Graph
 def create_ideation_graph():
     graph = StateGraph(dict)
 
