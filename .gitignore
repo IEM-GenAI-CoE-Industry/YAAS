@@ -43,6 +43,11 @@ venv.bak/
 .env.*.local
 *.env
 
+# OAuth / API Secrets
+client_secrets.json
+clients_secrets.json
+*_secrets.json
+
 # Logs
 *.log
 logs/
