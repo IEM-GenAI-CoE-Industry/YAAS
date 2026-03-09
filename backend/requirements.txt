@@ -22,3 +22,6 @@ fastapi                                      # Web framework for building APIs
 uvicorn                                      # ASGI server for FastAPI
 pydantic                                     # Data validation and settings management using Python type annotations
 pydantic-settings                            # Settings management for Pydantic
+requests                                     # HTTP calls for Stability image generation
+google-genai                                 # Direct Gemini image generation (Nano Banana)
+pillow                                       # Optional image handling (safe to include)
