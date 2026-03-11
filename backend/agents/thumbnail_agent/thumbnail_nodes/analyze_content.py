@@ -28,9 +28,8 @@ def _validate_schema(data: Dict[str, Any]) -> bool:
     if data.get("emotion_style") not in ALLOWED_EMOTIONS:
         return False
 
-    # -------------------------
+
     # Subject validation
-    # -------------------------
     subject = data.get("subject")
     if not isinstance(subject, dict):
         return False
@@ -50,9 +49,8 @@ def _validate_schema(data: Dict[str, Any]) -> bool:
     if subject.get("shot_type") not in ALLOWED_SHOT_TYPES:
         return False
 
-    # -------------------------
+    
     # Background validation
-    # -------------------------
     background = data.get("background")
     if not isinstance(background, dict):
         return False
@@ -66,9 +64,8 @@ def _validate_schema(data: Dict[str, Any]) -> bool:
     if background.get("clutter_level") not in ALLOWED_CLUTTER:
         return False
 
-    # -------------------------
+    
     # Composition validation
-    # -------------------------
     composition = data.get("composition")
     if not isinstance(composition, dict):
         return False
@@ -79,9 +76,8 @@ def _validate_schema(data: Dict[str, Any]) -> bool:
     if composition.get("depth") not in ALLOWED_DEPTH:
         return False
 
-    # -------------------------
+    
     # Text validation
-    # -------------------------
     text = data.get("text")
     if not isinstance(text, dict):
         return False
@@ -90,9 +86,8 @@ def _validate_schema(data: Dict[str, Any]) -> bool:
     if not isinstance(content, str) or len(content.split()) > 6:
         return False
 
-    # -------------------------
+    
     # Color palette validation
-    # -------------------------
     palette = data.get("color_palette")
     if not isinstance(palette, dict):
         return False
