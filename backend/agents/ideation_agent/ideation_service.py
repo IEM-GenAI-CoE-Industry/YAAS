@@ -1,4 +1,4 @@
-from agents.ideation.ideation_graph import create_ideation_graph
+from agents.ideation_agent.ideation_graph import create_ideation_graph
 
 _ideation_graph = create_ideation_graph()
 
