@@ -96,7 +96,6 @@ def generate_video(prompt, output_file, sound_enabled):
         config=types.GenerateVideosConfig(
             aspect_ratio=ASPECT_RATIO,
             resolution=RESOLUTION,
-            duration_seconds=DURATION,
             person_generation="allow_adult"  # Optimized for API compatibility
         )
     )
