@@ -1,14 +1,17 @@
 """
-YouTube Analytics Agent - OAuth-Authenticated with Real API Data
+YouTube Analytics Agent
+--------------------------------
+Fetch and analyze real YouTube video performance data using OAuth 2.0.
 
-This script fetches real YouTube analytics data using:
-- YouTube Data API v3 (for video metadata: views, likes, comments, title)
-- YouTube Analytics API v2 (for watch time, demographics, traffic sources)
+APIs Used:
+- YouTube Data API v3     (video metadata: views, likes, comments, title)
+- YouTube Analytics API v2 (watch time, demographics, traffic sources)
 
 Prerequisites:
-- client_secrets.json must exist in the working directory
-- YouTube Data API v3 and YouTube Analytics API must be enabled in GCP
-- OAuth consent screen configured with required scopes
+    pip install google-auth-oauthlib google-api-python-client python-dotenv
+    - client_secrets.json must exist in the working directory
+    - YouTube Data API v3 and YouTube Analytics API enabled in GCP
+    - OAuth consent screen configured with required scopes
 """
 
 import logging
@@ -32,6 +35,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/yt-analytics.readonly"
 ]
 
+
 @dataclass
 class VideoMetrics:
     video_id: str
@@ -39,14 +43,15 @@ class VideoMetrics:
     views: int
     likes: int
     comments: int
-    watch_time: float  # Real: estimatedMinutesWatched from Analytics API
-    average_view_duration: float  # Real: averageViewDuration from Analytics API
-    engagement_rate: float  # Calculated: (likes + comments) / views
+    watch_time: float               # estimatedMinutesWatched from Analytics API
+    average_view_duration: float    # averageViewDuration from Analytics API
+    engagement_rate: float          # (likes + comments) / views
     # CTR is unavailable via public YouTube APIs at video level.
     # Only accessible in YouTube Studio with private credentials.
     click_through_rate: Optional[float] = None
     demographics: Dict[str, Any] = field(default_factory=dict)
     traffic_sources: Dict[str, float] = field(default_factory=dict)
+
 
 @dataclass
 class PerformanceInsight:
@@ -55,19 +60,20 @@ class PerformanceInsight:
     recommendation: str
     priority: str = "medium"
 
+
 class AnalyticsAgent:
     """
     YouTube Analytics Agent using OAuth 2.0 authentication.
-    
+
     Fetches real data from:
     - YouTube Data API v3 (video metadata)
     - YouTube Analytics API v2 (watch time, demographics, traffic sources)
     """
-    
+
     def __init__(self, credentials):
         """
         Initialize the agent with OAuth credentials.
-        
+
         Args:
             credentials: google.oauth2.credentials.Credentials from OAuth flow
         """
@@ -78,13 +84,13 @@ class AnalyticsAgent:
             "engagement_rate": 0.04,
             "like_to_view_ratio": 0.035,
             "comment_to_view_ratio": 0.005,
-            "watch_time_threshold": 240  
+            "watch_time_threshold": 240
         }
 
     def _build_youtube_service(self):
         """Build YouTube Data API v3 service with OAuth credentials."""
         return build("youtube", "v3", credentials=self.credentials)
-    
+
     def _build_youtube_analytics_service(self):
         """Build YouTube Analytics API v2 service with OAuth credentials."""
         return build("youtubeAnalytics", "v2", credentials=self.credentials)
@@ -92,13 +98,12 @@ class AnalyticsAgent:
     def get_video_analytics(self, video_id: str) -> VideoMetrics:
         """
         Fetch real analytics for a video.
-        
+
         Uses YouTube Data API for metadata and YouTube Analytics API for
         watch time, demographics, and traffic sources.
         """
         logger.info(f"Fetching analytics for video: {video_id}")
-        
-        # Fetch video metadata from Data API
+
         request = self.youtube.videos().list(part="statistics,snippet", id=video_id)
         response = request.execute()
 
@@ -112,12 +117,10 @@ class AnalyticsAgent:
         views = int(stats.get("viewCount", 0))
         likes = int(stats.get("likeCount", 0))
         comments = int(stats.get("commentCount", 0))
-        
-        # Engagement rate: (likes + comments) / views
-        # Note: shares removed - shareCount is deprecated in YouTube Data API
+
+        # shareCount is deprecated in YouTube Data API — excluded from engagement
         engagement_rate = (likes + comments) / views if views > 0 else 0
 
-        # Fetch real analytics from YouTube Analytics API
         watch_time, avg_view_duration = self._get_watch_time_metrics(video_id)
         demographics = self._get_audience_demographics(video_id)
         traffic_sources = self._get_traffic_sources(video_id)
@@ -131,23 +134,22 @@ class AnalyticsAgent:
             watch_time=watch_time,
             average_view_duration=avg_view_duration,
             engagement_rate=engagement_rate,
-            click_through_rate=None,  # Not available via public API
+            click_through_rate=None,    # Not available via public API
             demographics=demographics,
             traffic_sources=traffic_sources
         )
-    
+
     def _get_watch_time_metrics(self, video_id: str) -> tuple:
         """
         Fetch real watch time metrics from YouTube Analytics API.
-        
+
         Returns:
             tuple: (estimatedMinutesWatched, averageViewDuration)
         """
         try:
-            # Query for the last 2 years of data (or video lifetime)
             end_date = datetime.now().strftime("%Y-%m-%d")
             start_date = (datetime.now() - timedelta(days=730)).strftime("%Y-%m-%d")
-            
+
             response = self.youtube_analytics.reports().query(
                 ids="channel==MINE",
                 startDate=start_date,
@@ -155,7 +157,7 @@ class AnalyticsAgent:
                 metrics="estimatedMinutesWatched,averageViewDuration",
                 filters=f"video=={video_id}"
             ).execute()
-            
+
             if response.get("rows") and len(response["rows"]) > 0:
                 row = response["rows"][0]
                 watch_time = float(row[0]) if row[0] is not None else 0.0
@@ -165,7 +167,7 @@ class AnalyticsAgent:
             else:
                 logger.warning(f"No watch time data available for video {video_id}")
                 return 0.0, 0.0
-                
+
         except Exception as e:
             logger.warning(f"Failed to fetch watch time metrics: {e}")
             return 0.0, 0.0
@@ -173,17 +175,16 @@ class AnalyticsAgent:
     def _get_audience_demographics(self, video_id: str) -> Dict[str, Any]:
         """
         Fetch real audience demographics from YouTube Analytics API.
-        
+
         Returns age group and gender distribution percentages.
         Note: Demographics may be empty for small channels or new videos.
         """
         demographics = {"age": {}, "gender": {}, "location": {}}
-        
+
         try:
             end_date = datetime.now().strftime("%Y-%m-%d")
             start_date = (datetime.now() - timedelta(days=730)).strftime("%Y-%m-%d")
-            
-            # Fetch age group demographics
+
             age_response = self.youtube_analytics.reports().query(
                 ids="channel==MINE",
                 startDate=start_date,
@@ -192,14 +193,13 @@ class AnalyticsAgent:
                 dimensions="ageGroup",
                 filters=f"video=={video_id}"
             ).execute()
-            
+
             if age_response.get("rows"):
                 for row in age_response["rows"]:
                     age_group = row[0]
                     percentage = float(row[1]) / 100.0 if row[1] else 0.0
                     demographics["age"][age_group] = percentage
-            
-            # Fetch gender demographics
+
             gender_response = self.youtube_analytics.reports().query(
                 ids="channel==MINE",
                 startDate=start_date,
@@ -208,14 +208,13 @@ class AnalyticsAgent:
                 dimensions="gender",
                 filters=f"video=={video_id}"
             ).execute()
-            
+
             if gender_response.get("rows"):
                 for row in gender_response["rows"]:
                     gender = row[0]
                     percentage = float(row[1]) / 100.0 if row[1] else 0.0
                     demographics["gender"][gender] = percentage
-            
-            # Fetch country demographics
+
             country_response = self.youtube_analytics.reports().query(
                 ids="channel==MINE",
                 startDate=start_date,
@@ -226,7 +225,7 @@ class AnalyticsAgent:
                 sort="-views",
                 filters=f"video=={video_id}"
             ).execute()
-            
+
             if country_response.get("rows"):
                 total_views = sum(float(row[1]) for row in country_response["rows"])
                 if total_views > 0:
@@ -234,25 +233,25 @@ class AnalyticsAgent:
                         country = row[0]
                         percentage = float(row[1]) / total_views
                         demographics["location"][country] = percentage
-                        
+
         except Exception as e:
             logger.warning(f"Failed to fetch demographics: {e}")
-            # Return empty demographics - this is expected for small channels
-        
+            # Expected for small channels or new videos
+
         return demographics
 
     def _get_traffic_sources(self, video_id: str) -> Dict[str, float]:
         """
         Fetch real traffic source distribution from YouTube Analytics API.
-        
+
         Returns percentage breakdown of traffic sources (search, suggested, etc.)
         """
         traffic_sources = {}
-        
+
         try:
             end_date = datetime.now().strftime("%Y-%m-%d")
             start_date = (datetime.now() - timedelta(days=730)).strftime("%Y-%m-%d")
-            
+
             response = self.youtube_analytics.reports().query(
                 ids="channel==MINE",
                 startDate=start_date,
@@ -261,7 +260,7 @@ class AnalyticsAgent:
                 dimensions="insightTrafficSourceType",
                 filters=f"video=={video_id}"
             ).execute()
-            
+
             if response.get("rows"):
                 total_views = sum(float(row[1]) for row in response["rows"])
                 if total_views > 0:
@@ -269,36 +268,33 @@ class AnalyticsAgent:
                         source_type = row[0].lower().replace("_", " ")
                         percentage = float(row[1]) / total_views
                         traffic_sources[source_type] = percentage
-                        
+
         except Exception as e:
             logger.warning(f"Failed to fetch traffic sources: {e}")
-            # Return empty dict - analytics may not be available
-        
+
         return traffic_sources
 
     def generate_performance_insights(self, video_metrics: VideoMetrics) -> List[PerformanceInsight]:
         """
         Generate rule-based performance insights from video metrics.
-        
-        Note: CTR insights are skipped since CTR is not available via public API.
+
+        Note: CTR insights are skipped — CTR is not available via public API.
         """
         insights = []
         engagement = video_metrics.engagement_rate
         like_ratio = video_metrics.likes / video_metrics.views if video_metrics.views > 0 else 0
         comment_ratio = video_metrics.comments / video_metrics.views if video_metrics.views > 0 else 0
 
-        # CTR insight removed - CTR not available via public YouTube APIs
-
         if engagement < self.thresholds["engagement_rate"]:
             insights.append(PerformanceInsight(
-                "Low Engagement", 
+                "Low Engagement",
                 f"Engagement rate is {engagement:.3f}, below optimal levels.",
                 "Add call-to-actions, ask questions, and encourage viewer interaction throughout the video.",
                 "high"
             ))
         else:
             insights.append(PerformanceInsight(
-                "High Engagement", 
+                "High Engagement",
                 f"Strong engagement rate of {engagement:.3f}.",
                 "Your content resonates well with viewers. Continue with similar content style.",
                 "low"
@@ -306,7 +302,7 @@ class AnalyticsAgent:
 
         if like_ratio < self.thresholds["like_to_view_ratio"]:
             insights.append(PerformanceInsight(
-                "Low Like Ratio", 
+                "Low Like Ratio",
                 f"Like-to-view ratio is {like_ratio:.4f}.",
                 "Remind viewers to like the video at strategic moments (beginning, middle, end).",
                 "medium"
@@ -314,13 +310,12 @@ class AnalyticsAgent:
 
         if comment_ratio < self.thresholds["comment_to_view_ratio"]:
             insights.append(PerformanceInsight(
-                "Low Comment Activity", 
+                "Low Comment Activity",
                 f"Comment-to-view ratio is {comment_ratio:.4f}.",
                 "Pose discussion questions, respond to early comments to encourage more interaction.",
                 "medium"
             ))
-        
-        # Watch time insight
+
         if video_metrics.average_view_duration > 0:
             if video_metrics.average_view_duration < 60:
                 insights.append(PerformanceInsight(
@@ -339,12 +334,13 @@ class AnalyticsAgent:
 
         return insights
 
+
 def display_results(metrics: VideoMetrics, insights: List[PerformanceInsight]):
-    """Display the analysis results"""
-    print("\n" + "="*60)
+    """Display the analysis results."""
+    print("\n" + "=" * 60)
     print("YOUTUBE VIDEO ANALYTICS REPORT")
-    print("="*60)
-    
+    print("=" * 60)
+
     if metrics:
         print(f"Video: {metrics.title}")
         print(f"Video ID: {metrics.video_id}")
@@ -354,18 +350,16 @@ def display_results(metrics: VideoMetrics, insights: List[PerformanceInsight]):
         print(f"Engagement Rate: {metrics.engagement_rate:.3f}")
         print(f"Watch Time: {metrics.watch_time:,.1f} minutes")
         print(f"Avg View Duration: {metrics.average_view_duration:.1f} seconds")
-        
-        # CTR display - explicitly unavailable
+
         if metrics.click_through_rate is None:
-            print(f"Click-through Rate: (unavailable via public API)")
+            print("Click-through Rate: (unavailable via public API)")
         else:
             print(f"Click-through Rate: {metrics.click_through_rate:.3f}")
-        
-        # Display demographics if available
+
         if metrics.demographics.get("age"):
-            print("\n" + "-"*40)
+            print("\n" + "-" * 40)
             print("AUDIENCE DEMOGRAPHICS")
-            print("-"*40)
+            print("-" * 40)
             if metrics.demographics["age"]:
                 print("Age Distribution:")
                 for age, pct in metrics.demographics["age"].items():
@@ -378,54 +372,46 @@ def display_results(metrics: VideoMetrics, insights: List[PerformanceInsight]):
                 print("Top Locations:")
                 for loc, pct in list(metrics.demographics["location"].items())[:5]:
                     print(f"  {loc}: {pct:.1%}")
-        
-        # Display traffic sources if available
+
         if metrics.traffic_sources:
-            print("\n" + "-"*40)
+            print("\n" + "-" * 40)
             print("TRAFFIC SOURCES")
-            print("-"*40)
+            print("-" * 40)
             for source, pct in sorted(metrics.traffic_sources.items(), key=lambda x: -x[1]):
                 print(f"  {source}: {pct:.1%}")
-        
-        print("\n" + "-"*40)
+
+        print("\n" + "-" * 40)
         print("PERFORMANCE INSIGHTS & RECOMMENDATIONS")
-        print("-"*40)
-        
+        print("-" * 40)
+
         for insight in insights:
             priority_emoji = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(insight.priority, "⚪")
             print(f"{priority_emoji} {insight.insight_type}: {insight.message}")
             if insight.recommendation:
                 print(f"   💡 Recommendation: {insight.recommendation}\n")
             else:
-                 print("\n")
-            
+                print("\n")
     else:
         print("Failed to fetch video metrics")
-    
-    print("="*60)
+
+    print("=" * 60)
+
 
 if __name__ == "__main__":
-    # Check for client_secrets.json
-    # Check for client_secrets.json
-    # Resolve path relative to this script's location
     script_dir = os.path.dirname(os.path.abspath(__file__))
     CLIENT_SECRETS_FILE = os.path.join(script_dir, "client_secrets.json")
-    
+
     if not os.path.exists(CLIENT_SECRETS_FILE):
         print(f"Error: {CLIENT_SECRETS_FILE} not found.")
         print("Download OAuth 2.0 credentials from Google Cloud Console.")
-        print("Place 'client_secrets.json' in the 'backend' directory.")
+        print("Place 'client_secrets.json' in the 'analytics_agent' directory.")
         exit(1)
-    
-    # Run OAuth flow - will open browser for consent
+
     print("Starting OAuth flow - your browser will open for authentication...")
     try:
-        flow = InstalledAppFlow.from_client_secrets_file(
-            CLIENT_SECRETS_FILE, 
-            SCOPES
-        )
+        flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
         credentials = flow.run_local_server(
-            port=0,  # Use any available port
+            port=0,
             prompt="consent",
             authorization_prompt_message="Opening browser for Google OAuth..."
         )
@@ -435,9 +421,8 @@ if __name__ == "__main__":
         logger.error(f"OAuth error: {e}")
         exit(1)
 
-    # Video to analyze
     video_id = "UmEyKZZhCZo"
-    
+
     try:
         agent = AnalyticsAgent(credentials)
         metrics = agent.get_video_analytics(video_id)
