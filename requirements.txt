@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+jinja2
+tinydb
+pytz
+python-multipart
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+google.generativeai
+python-dotenv
