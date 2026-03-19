@@ -29,6 +29,14 @@ def run_video_generator_agent(global_state: dict) -> dict:
     output_filename = global_state.get("output_filename", "generated_reel.mp4")
     output_path = os.path.join(OUTPUT_DIR, output_filename)
 
+    # Temporary bypass to save Veo 3 API credits
+    BYPASS_GENERATION = True
+    if BYPASS_GENERATION and os.path.exists(output_path):
+        logger.info(f"== TEMPORARY BYPASS ACTIVE == Reusing existing video: {output_path}")
+        global_state["video_path"] = output_path
+        global_state["video_url"] = f"http://localhost:8002/outputs/{output_filename}"
+        return global_state
+
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY environment variable is not set.")
@@ -40,6 +48,7 @@ def run_video_generator_agent(global_state: dict) -> dict:
 
     if result:
         global_state["video_path"] = result
+        global_state["video_url"] = f"http://localhost:8001/outputs/{output_filename}"
         logger.info(f"Video saved to {result}")
     else:
         logger.warning("Video generation returned None (possible API error).")

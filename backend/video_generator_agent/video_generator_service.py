@@ -47,12 +47,11 @@ class VideoGeneratorService:
         print("\nStarting video generation...\n")
 
         operation = client.models.generate_videos(
-            model="veo-3.1-generate-preview",
+            model="veo-3.0-generate-001",
             prompt=prompt,
             config=types.GenerateVideosConfig(
                 aspect_ratio=aspect_ratio,
                 resolution=resolution,
-                person_generation="allow_adult"
             )
         )
 

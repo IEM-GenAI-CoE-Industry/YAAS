@@ -186,3 +186,91 @@ async def analytics(req: AnalyticsRequest):
         raise HTTPException(status_code=500, detail=f"Analytics Agent error: {str(e)}")
 
     return SessionResponse(session_id="standalone", state=state)
+
+
+# ── 8. OAuth Web Flow ───────────────────────────────────────────────────────
+
+import json
+import os
+from fastapi import Request
+from fastapi.responses import RedirectResponse, HTMLResponse
+
+# Required for localhost testing without HTTPS
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+@api_router.get("/auth/youtube/login")
+async def youtube_login(request: Request):
+    """Generate the Google OAuth URL and redirect the user."""
+    from google_auth_oauthlib.flow import Flow
+    
+    redirect_uri = str(request.base_url).rstrip("/") + "/YAAS/content/v1/auth/youtube/callback"
+    
+    flow = Flow.from_client_secrets_file(
+        'client_secrets.json',
+        scopes=[
+            "https://www.googleapis.com/auth/youtube.upload",
+            "https://www.googleapis.com/auth/youtube.readonly"
+        ],
+        redirect_uri=redirect_uri
+    )
+    auth_url, _ = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        login_hint='',
+    )
+    # Force account picker by appending prompt parameter directly
+    auth_url += '&prompt=select_account+consent'
+    return RedirectResponse(auth_url)
+
+
+@api_router.get("/auth/youtube/callback")
+async def youtube_callback(request: Request):
+    """Handle the Google OAuth redirect and save token.json."""
+    from google_auth_oauthlib.flow import Flow
+
+    redirect_uri = str(request.base_url).rstrip("/") + "/YAAS/content/v1/auth/youtube/callback"
+    state = request.query_params.get("state")
+
+    flow = Flow.from_client_secrets_file(
+        'client_secrets.json',
+        scopes=[
+            "https://www.googleapis.com/auth/youtube.upload",
+            "https://www.googleapis.com/auth/youtube.readonly"
+        ],
+        redirect_uri=redirect_uri,
+        state=state,
+    )
+    
+    # fetch_token requires the full URL
+    flow.fetch_token(authorization_response=str(request.url))
+    
+    creds = flow.credentials
+    
+    token_data = {
+        "token": creds.token,
+        "refresh_token": creds.refresh_token,
+        "token_uri": creds.token_uri,
+        "client_id": creds.client_id,
+        "client_secret": creds.client_secret,
+        "scopes": list(creds.scopes) if creds.scopes else [],
+        "universe_domain": "googleapis.com",
+        "account": "",
+        "expiry": creds.expiry.isoformat() if hasattr(creds, 'expiry') and creds.expiry else None,
+    }
+    
+    with open("token.json", "w") as f:
+        json.dump(token_data, f, indent=4)
+        
+    html = """
+    <html>
+    <head><style>body { font-family: sans-serif; text-align: center; padding: 50px; background: #0f172a; color: white; }</style></head>
+    <body>
+    <h2>✅ Authentication Successful!</h2>
+    <p>You can now close this window and click <b>Publish to YouTube</b> again in the pipeline.</p>
+    <script>
+        setTimeout(() => window.close(), 3000);
+    </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(html)

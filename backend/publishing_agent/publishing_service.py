@@ -52,13 +52,24 @@ def run_publishing_agent(global_state: dict) -> dict:
         raise ValueError("Publishing Agent requires 'seo_metadata' and 'video_path' in global state.")
         
     try:
-        # Assuming creds are stored or passed in a real scenario
-        # In this sandbox, just use the local token.json
         from google.oauth2.credentials import Credentials
-        from util.constants import YOUTUBE_UPLOAD_SCOPE
-        creds = Credentials.from_authorized_user_file("token.json", [YOUTUBE_UPLOAD_SCOPE])
+        creds = Credentials.from_authorized_user_file(
+            "token.json",
+            scopes=[
+                "https://www.googleapis.com/auth/youtube.upload",
+                "https://www.googleapis.com/auth/youtube.readonly",
+            ],
+        )
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                from google.auth.transport.requests import Request as GoogleRequest
+                creds.refresh(GoogleRequest())
+            else:
+                raise Exception("Token invalid or expired with no refresh token")
+        global_state["oauth_required"] = False
     except Exception as e:
         print(f"Auth error (token.json missing or invalid): {e}")
+        global_state["oauth_required"] = True
         return global_state
         
     print(f"Uploading video {video_path} to YouTube...")

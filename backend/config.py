@@ -13,6 +13,10 @@ class Settings(BaseSettings):
         "https://localhost:8000",
         "http://localhost:5173",
         "https://localhost:5173",
+        "http://localhost:5174",
+        "https://localhost:5174",
+        "http://localhost:5175",
+        "https://localhost:5175",
     ]
 
     PROJECT_NAME: str = "YAAS Platform APIs"
