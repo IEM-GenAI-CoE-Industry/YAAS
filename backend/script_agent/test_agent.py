@@ -7,7 +7,7 @@ Sends a realistic thumbnail agent JSON and prints the generated timeline.
 """
 
 import json
-from script_agent import run_script_agent, validate_thumbnail_input  # type: ignore
+from script_agent.script_service import run_script_agent, validate_thumbnail_input
 
 # ─── Mock thumbnail agent output ─────────────────────────────────────────────
 # This matches the real schema your thumbnail agent produces.
@@ -62,7 +62,10 @@ def test_script_generation():
     # ── Run agent ──
     print("\n🎬 Calling Mistral API...\n")
     try:
-        result = run_script_agent(thumbnail_mock)
+        global_state_mock = {"thumbnail": {"thumbnail_spec": thumbnail_mock}}
+        result = run_script_agent(global_state_mock)
+        # unwrap for the rest of the file testing
+        result = result.get("script_timeline", {})
     except Exception as e:
         print(f"❌ Agent error: {e}")
         return

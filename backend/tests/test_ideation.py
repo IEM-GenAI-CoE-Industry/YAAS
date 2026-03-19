@@ -4,7 +4,7 @@ Used only to validate ideation + refinement logic.
 Safe to remove after review.
 """
 
-from agents.ideation_agent.ideation_graph import create_ideation_graph
+from ideation_agent.ideation_graph import create_ideation_graph
 
 if __name__ == "__main__":
     print("\nIdeation Agent – Local Test\n")

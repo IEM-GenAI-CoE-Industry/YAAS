@@ -1,27 +1,38 @@
-langchain-mistralai                          # Integration of LangChain with MistralAI
-langchain-openai                             # Integration of LangChain with OpenAI
-langchain-ollama                             # Integration of LangChain with Ollama
-langchain-google-genai                       # Integration of LangChain with Google GenAI
-langchain-groq                               # Integration of LangChain with Groq
+# ── LangChain Ecosystem ──────────────────────────────────────────────────────
+langchain                                    # Framework for developing applications powered by language models
 langchain-core                               # Core LangChain library
 langchain-community                          # Community contributions to LangChain
-python-dotenv                                # For loading environment variables from a .env file
-langchain                                    # Framework for developing applications powered by language models
 langgraph                                    # Stateful orchestration framework for LangChain
-langsmith                                    # Integration of LangChain with LangSmith
-chromadb                                     # ChromaDB for vector storage
-black                                        # Code formatter
-unstructured                                 # Loads unstructured loaders from langchain
-networkx                                     # Required for using UnstructuredExcelLoader
-openpyxl                                     # Reads/writes Excel 2010 xlsx/xlsm/xltx/xltm files
-pandas                                       # Data manipulation and analysis library
-pypdf                                        # PDF toolkit for reading and manipulating PDF files
-python-docx                                  # Reads/writes Microsoft Word 2007/2010 docx files
-ruff                                         # Linting tool for Python
+langsmith                                    # Tracing and monitoring for LangChain
+
+# ── LangChain LLM Integrations ──────────────────────────────────────────────
+langchain-mistralai                          # MistralAI integration
+langchain-openai                             # OpenAI integration
+langchain-ollama                             # Ollama (local models) integration
+langchain-google-genai                       # Google GenAI integration
+langchain-groq                               # Groq integration
+
+# ── Google APIs & SDKs ──────────────────────────────────────────────────────
+google-genai                                 # Direct Gemini SDK (image gen, Veo video gen)
+google-api-python-client                     # YouTube Data API v3 & YouTube Analytics API
+google-auth                                  # Google authentication core
+google-auth-oauthlib                         # OAuth 2.0 flow for YouTube publishing/analytics
+google-auth-httplib2                         # HTTP transport for Google auth
+
+# ── Web Framework ───────────────────────────────────────────────────────────
 fastapi                                      # Web framework for building APIs
 uvicorn                                      # ASGI server for FastAPI
-pydantic                                     # Data validation and settings management using Python type annotations
+pydantic                                     # Data validation and settings management
 pydantic-settings                            # Settings management for Pydantic
-requests                                     # HTTP calls for Stability image generation
-google-genai                                 # Direct Gemini image generation (Nano Banana)
-pillow                                       # Optional image handling (safe to include)
+python-multipart                             # File upload support for FastAPI
+
+# ── Utilities ───────────────────────────────────────────────────────────────
+python-dotenv                                # Loading environment variables from .env
+requests                                     # HTTP calls (Stability AI image generation)
+pillow                                       # Image handling
+
+# ── Dev Tools (optional) ────────────────────────────────────────────────────
+# black                                      # Code formatter
+# ruff                                       # Linting tool
+# pytest                                     # Test runner
+# pytest-mock                                # Mocking support for pytest

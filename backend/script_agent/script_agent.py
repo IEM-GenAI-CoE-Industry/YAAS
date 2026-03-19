@@ -26,7 +26,6 @@ load_dotenv()
 
 API_KEY = os.getenv("MISTRAL_API_KEY")
 MODEL = os.getenv("SCRIPT_AGENT_MODEL", "mistral-large-latest")
-MAX_TOKENS = int(os.getenv("SCRIPT_AGENT_MAX_TOKENS", "4096"))
 
 # ─── System prompt ────────────────────────────────────────────────────────────
 
@@ -182,7 +181,6 @@ def run_script_agent(thumbnail_data: dict) -> dict:
 
     response = client.chat.complete(
         model=MODEL,
-        max_tokens=MAX_TOKENS,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": build_user_prompt(thumbnail_data)},

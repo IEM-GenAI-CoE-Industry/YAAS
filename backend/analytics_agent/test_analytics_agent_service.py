@@ -12,7 +12,7 @@ Or from any directory:
 """
 
 import sys
-sys.path.insert(0, "/Users/satabarto/Project/YAAS/YAAS/backend/analyticsagent")
+sys.path.insert(0, "/Users/satabarto/Project/YAAS/YAAS/backend/analytics_agent")
 
 import pytest
 from unittest.mock import MagicMock, patch, PropertyMock

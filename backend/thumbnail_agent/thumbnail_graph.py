@@ -1,13 +1,13 @@
 from langgraph.graph import StateGraph, END
 
-from agents.thumbnail_agent.thumbnail_state import ThumbnailState
+from thumbnail_agent.thumbnail_state import ThumbnailState
 
-from agents.thumbnail_agent.thumbnail_nodes.analyze_content import analyze_content
-from agents.thumbnail_agent.thumbnail_nodes.apply_user_overrides import apply_user_overrides
-from agents.thumbnail_agent.thumbnail_nodes.design_rules import apply_design_rules
-from agents.thumbnail_agent.thumbnail_nodes.generate_prompt import generate_prompt
-from agents.thumbnail_agent.thumbnail_nodes.generate_image import generate_image
-from agents.thumbnail_agent.thumbnail_nodes.post_render_text import post_render_text
+from thumbnail_agent.thumbnail_nodes.analyze_content import analyze_content
+from thumbnail_agent.thumbnail_nodes.apply_user_overrides import apply_user_overrides
+from thumbnail_agent.thumbnail_nodes.design_rules import apply_design_rules
+from thumbnail_agent.thumbnail_nodes.generate_prompt import generate_prompt
+from thumbnail_agent.thumbnail_nodes.generate_image import generate_image
+from thumbnail_agent.thumbnail_nodes.post_render_text import post_render_text
 
 
 # CONDITIONS
