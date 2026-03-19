@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import base64
-from agents.thumbnail_agent.thumbnail_service import run_thumbnail_agent
+from thumbnail_agent.thumbnail_service import run_thumbnail_agent
 
 
 def main():

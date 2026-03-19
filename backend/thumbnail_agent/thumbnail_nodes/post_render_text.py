@@ -4,7 +4,7 @@ from io import BytesIO
 
 from PIL import Image, ImageDraw, ImageFont
 
-from agents.thumbnail_agent.thumbnail_state import ThumbnailState
+from thumbnail_agent.thumbnail_state import ThumbnailState
 
 logger = logging.getLogger(__name__)
 

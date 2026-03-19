@@ -8,8 +8,8 @@ import base64
 from io import BytesIO
 from PIL import Image
 
-from agents.ideation_agent.ideation_service import run_ideation_agent
-from agents.thumbnail_agent.thumbnail_service import run_thumbnail_agent
+from ideation_agent.ideation_service import run_ideation_agent
+from thumbnail_agent.thumbnail_service import run_thumbnail_agent
 
 
 # =================================================

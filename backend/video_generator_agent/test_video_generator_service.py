@@ -90,10 +90,6 @@ class TestInit:
         svc = VideoGeneratorService()
         assert svc.GEMINI_API_KEY == "env-key"
 
-    def test_default_placeholder_when_no_key(self, monkeypatch):
-        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
-        svc = VideoGeneratorService()
-        assert svc.GEMINI_API_KEY == "YOUR_GEMINI_API_KEY"
 
     def test_explicit_key_overrides_env(self, monkeypatch):
         monkeypatch.setenv("GEMINI_API_KEY", "env-key")

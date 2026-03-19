@@ -3,9 +3,10 @@ import re
 from typing import Any, Dict
 
 from util.llm_factory import LLMFactory
-from agents.thumbnail_agent.thumbnail_state import ThumbnailState
+from util.system_prompt import PROMPT_THUMBNAIL_ANALYZE_SYSTEM, PROMPT_THUMBNAIL_ANALYZE_HUMAN
+from thumbnail_agent.thumbnail_state import ThumbnailState
 
-from agents.thumbnail_agent.constants import (
+from util.constants import (
     ALLOWED_EMOTIONS,
     ALLOWED_SHOT_TYPES,
     ALLOWED_SUBJECT_POSITIONS,
@@ -105,79 +106,6 @@ def _validate_schema(data: Dict[str, Any]) -> bool:
     return True
 
 
-def _build_prompt(
-    idea_title: str,
-    idea_description: str,
-    audience: str,
-    region: str,
-    content_format: str,
-    script: str,
-) -> str:
-
-    script_section = f"\nScript:\n{script}\n" if script else ""
-
-    return f"""
-You are an expert YouTube thumbnail strategist specialized in high-CTR, mobile-first thumbnails.
-
-Analyze the content and return a STRICT JSON thumbnail design specification.
-
-Content Title:
-{idea_title}
-
-Content Description:
-{idea_description}
-
-Audience:
-{audience}
-
-Region:
-{region}
-
-Content Format:
-{content_format}
-{script_section}
-
-Return ONLY valid JSON in this exact structure:
-
-{{
-  "subject": {{
-    "type": "human or object",
-    "description": "clear visual description",
-    "expression": "natural emotional expression",
-    "pose": "short descriptive phrase",
-    "shot_type": "close-up | mid-shot | wide"
-  }},
-  "background": {{
-    "style": "clean | blurred | realistic | studio",
-    "clutter_level": "low | medium",
-    "lighting": "soft studio | cinematic | natural"
-  }},
-  "emotion_style": "excited | dramatic | professional | friendly | serious",
-  "color_palette": {{
-    "primary": "#HEX",
-    "secondary": "#HEX",
-    "accent": "#HEX"
-  }},
-  "composition": {{
-    "subject_position": "center | left | right",
-    "depth": "shallow | medium"
-  }},
-  "text": {{
-    "content": "max 6 words",
-    "style": "bold | clean | dramatic"
-  }}
-}}
-
-Rules:
-- Optimize for high click-through rate
-- Ensure subject is clearly visible at small mobile sizes
-- Strong subject emphasis
-- Clean realistic background
-- No logos, no UI, no platform branding
-- No explanations, no markdown
-""".strip()
-
-
 def _extract_json(text: str) -> Dict[str, Any] | None:
     match = re.search(r"\{[\s\S]*\}", text)
     if not match:
@@ -198,20 +126,21 @@ def analyze_content(state: ThumbnailState) -> ThumbnailState:
     """
 
     script = state.get("script") or ""
+    script_section = f"\nScript:\n{script}\n" if script else ""
 
-    prompt = _build_prompt(
-        state.get("idea_title", ""),
-        state.get("idea_description", ""),
-        state.get("audience", ""),
-        state.get("region", ""),
-        state.get("content_format", ""),
-        script,
+    prompt = PROMPT_THUMBNAIL_ANALYZE_SYSTEM.format(
+        idea_title=state.get("idea_title", ""),
+        idea_description=state.get("idea_description", ""),
+        audience=state.get("audience", ""),
+        region=state.get("region", ""),
+        content_format=state.get("content_format", ""),
+        script_section=script_section,
     )
 
     for _ in range(2):
         response = LLMFactory.invoke(
             system_prompt=prompt,
-            human_message="Generate thumbnail JSON.",
+            human_message=PROMPT_THUMBNAIL_ANALYZE_HUMAN,
             temperature=0.4,
         )
 

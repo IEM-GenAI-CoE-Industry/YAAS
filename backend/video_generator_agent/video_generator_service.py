@@ -19,45 +19,25 @@ import time
 import json
 from google import genai                 # ✅ Correct SDK (google-genai)
 from google.genai import types           # ✅ Correct import path
+from util.system_prompt import PROMPT_VIDEO_GENERATOR
+
 
 
 class VideoGeneratorService:
     def __init__(self, api_key=None):
-        self.GEMINI_API_KEY = api_key or os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")
+        self.GEMINI_API_KEY = api_key or os.environ.get("GEMINI_API_KEY")
 
     def build_prompt(self, transcript, tone, sound_enabled):
         if sound_enabled:
-            audio_section = """
-            Include synchronized audio, ambient sound effects, and dialogue matching the transcript.
-            """
+            audio_section = "\nInclude synchronized audio, ambient sound effects, and dialogue matching the transcript.\n"
         else:
-            audio_section = """
-            Silent cinematic video with only environmental ambiance.
-            No spoken dialogue.
-            """
+            audio_section = "\nSilent cinematic video with only environmental ambiance.\nNo spoken dialogue.\n"
 
-        prompt = f"""
-Create a high quality cinematic social media reel.
-
-Story:
-{transcript}
-
-Tone:
-{tone}
-
-Video Style:
-professional filmmaking quality
-smooth cinematic camera movement
-high detail textures
-natural lighting
-shallow depth of field
-
-{audio_section}
-
-Camera:
-dynamic cinematic framing
-smooth motion tracking
-"""
+        prompt = PROMPT_VIDEO_GENERATOR.format(
+            transcript=transcript,
+            tone=tone,
+            audio_section=audio_section,
+        )
 
         return prompt.strip()
 

@@ -1,23 +1,5 @@
-from agents.thumbnail_agent.thumbnail_state import ThumbnailState
-
-# Structured color fallback (converted from old schemes)
-COLOR_SCHEMES = {
-    "high_contrast": {
-        "primary": "#FF6B35",
-        "secondary": "#004E89",
-        "accent": "#FFFF00",
-    },
-    "educational": {
-        "primary": "#4834D4",
-        "secondary": "#686DE0",
-        "accent": "#30336B",
-    },
-    "tech_blue": {
-        "primary": "#0066CC",
-        "secondary": "#00CCFF",
-        "accent": "#FFFFFF",
-    },
-}
+from thumbnail_agent.thumbnail_state import ThumbnailState
+from util.constants import COLOR_SCHEMES
 
 
 def _select_color_palette(emotion_style: str, content_format: str) -> dict:

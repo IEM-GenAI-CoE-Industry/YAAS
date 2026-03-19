@@ -6,20 +6,18 @@ from typing import Optional
 
 from google import genai
 
-from agents.thumbnail_agent.thumbnail_state import ThumbnailState
-from util.image_config import (
+from thumbnail_agent.thumbnail_state import ThumbnailState
+from util.constants import (
     STABILITY_API_URL,
     STABILITY_MODEL,
-    GEMINI_MODEL,
-    STABILITY_API_KEY_ENV,
-    GEMINI_API_KEY_ENV,
+    GEMINI_IMAGE_MODEL,
 )
 
 logger = logging.getLogger(__name__)
 
 
 def _generate_with_gemini(prompt: str) -> Optional[str]:
-    api_key = os.getenv(GEMINI_API_KEY_ENV)
+    api_key = os.getenv("GEMINI_API_KEY")
 
     if not api_key:
         logger.warning("Gemini API key not found")
@@ -29,7 +27,7 @@ def _generate_with_gemini(prompt: str) -> Optional[str]:
         client = genai.Client(api_key=api_key)
 
         response = client.models.generate_content(
-            model=GEMINI_MODEL,
+            model=GEMINI_IMAGE_MODEL,
             contents=[prompt],
             config={"response_modalities": ["IMAGE"]},
         )
@@ -54,7 +52,7 @@ def _generate_with_gemini(prompt: str) -> Optional[str]:
 
 
 def _generate_with_stability(prompt: str) -> Optional[str]:
-    api_key = os.getenv(STABILITY_API_KEY_ENV)
+    api_key = os.getenv("STABILITY_API_KEY")
 
     if not api_key:
         logger.warning("Stability API key not found")

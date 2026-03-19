@@ -1,35 +1,52 @@
-from pydantic import BaseModel, Field, field_validator
-
-# Request Classes
-
-
-class GenerateContentRequest(BaseModel):
-    """Request model for generating content."""
-
-    question: str = Field(..., description="question for content generation")
-    local_llm: bool = Field(False, description="Whether to use a local LLM (default: False)")
-
-    @field_validator("question")
-    def validate_question(cls, value: str) -> str:
-        """Ensure question is not empty."""
-        if not value.strip():
-            raise ValueError("question cannot be empty")
-        return value.strip()
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, Field
 
 
-# Response Classes
+# ── Session ──────────────────────────────────────────────────────────────────
+
+class SessionResponse(BaseModel):
+    session_id: str
+    state: Dict[str, Any] = {}
 
 
-class GenerateContentResponse(BaseModel):
-    """Response model for content generation."""
+# ── Ideation Agent ───────────────────────────────────────────────────────────
 
-    status: str = Field(..., description="Status of the content generation")
-    message: str = Field(..., description="Message about the content generation")
-    data: str = Field(..., description="Generated content")
+class IdeationRequest(BaseModel):
+    topic: str = Field(..., description="Video topic / niche")
+    audience: str = Field(..., description="Target audience (e.g. college students)")
+    region: str = Field("Global", description="Target region")
+    content_format: str = Field("short-form", description="short-form or long-form")
 
-    @field_validator("data")
-    def validate_data(cls, value: str) -> str:
-        """Ensure data is not empty."""
-        if not value.strip():
-            raise ValueError("Generated content cannot be empty")
-        return value.strip()
+
+# ── Thumbnail Agent ──────────────────────────────────────────────────────────
+
+class ThumbnailRequest(BaseModel):
+    selected_idea_number: int = Field(1, description="1-based index of the idea to use")
+    enable_image_generation: bool = Field(False, description="Generate actual image via API")
+    image_provider: Optional[str] = Field(None, description="gemini or stability")
+    text_render_mode: str = Field("overlay", description="overlay or embedded")
+    user_overrides: Optional[Dict[str, Any]] = Field(None, description="Optional manual overrides")
+
+
+# ── Script Agent ─────────────────────────────────────────────────────────────
+# No request body needed — reads from session state.
+
+
+# ── Video Generator Agent ───────────────────────────────────────────────────
+
+class VideoRequest(BaseModel):
+    output_filename: str = Field("generated_reel.mp4", description="Name for the output .mp4 file")
+
+
+# ── SEO Agent ────────────────────────────────────────────────────────────────
+# No request body needed — reads from session state.
+
+
+# ── Publishing Agent ────────────────────────────────────────────────────────
+# No request body needed — reads from session state.
+
+
+# ── Analytics Agent ──────────────────────────────────────────────────────────
+
+class AnalyticsRequest(BaseModel):
+    video_id: str = Field(..., description="YouTube video ID to analyze")

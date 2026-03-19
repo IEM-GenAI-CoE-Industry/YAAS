@@ -1,8 +1,8 @@
 import re
 from typing import List, Tuple
 
-from agents.thumbnail_agent.thumbnail_graph import create_thumbnail_graph
-from agents.thumbnail_agent.thumbnail_state import ThumbnailState
+from thumbnail_agent.thumbnail_graph import create_thumbnail_graph
+from thumbnail_agent.thumbnail_state import ThumbnailState
 
 
 _thumbnail_graph = create_thumbnail_graph()

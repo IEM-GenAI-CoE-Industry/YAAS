@@ -1,9 +1,9 @@
 import re
 from typing import Any, Dict
 
-from agents.thumbnail_agent.thumbnail_state import ThumbnailState
+from thumbnail_agent.thumbnail_state import ThumbnailState
 
-from agents.thumbnail_agent.constants import (
+from util.constants import (
     ALLOWED_EMOTIONS,
     ALLOWED_SHOT_TYPES,
     ALLOWED_SUBJECT_POSITIONS,
